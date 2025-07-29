@@ -4,7 +4,7 @@ from config import (
     TRAINING_EPOCH, NUM_CLASSES, IN_CHANNELS, BCE_WEIGHTS, BACKGROUND_AS_CLASS, TRAIN_CUDA
 )
 from torch.nn import CrossEntropyLoss
-from dataset import get_Dataloaders
+#from dataset import get_Dataloaders
 from dataset_1 import get_Dataloaders_new
 from torch.optim import Adam
 # from torch.utils.tensorboard import SummaryWriter
@@ -23,6 +23,7 @@ if BACKGROUND_AS_CLASS:
   NUM_CLASSES += 1
 
 # writer = SummaryWriter("runs")
+# 设置cross_hair使用普通层或自定义层
 model = UNet3D(in_channels=IN_CHANNELS , num_classes= NUM_CLASSES,cross_hair=True)
 train_transforms = train_transform
 val_transforms = val_transform
