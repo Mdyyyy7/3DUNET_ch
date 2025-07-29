@@ -1,5 +1,6 @@
 import torch
 import math
+import os
 from config import (
     TRAINING_EPOCH, NUM_CLASSES, IN_CHANNELS, BCE_WEIGHTS, BACKGROUND_AS_CLASS, TRAIN_CUDA
 )
@@ -13,8 +14,27 @@ import time
 from evaluation import calculate_accuracy,calculate_dice,calculate_recall
 from losses import weighted_categorical_crossentropy_with_fpr
 import torch.nn.functional as F
+import matplotlib.pyplot as plt
 
 
+
+def save_probability_maps_from_output(output, num_classes=3, save_dir="prob_maps", prefix="epoch"):
+    os.makedirs(save_dir, exist_ok=True)
+
+    # Softmax 转成概率
+    prob_map = torch.softmax(output, dim=1)  
+
+    for class_index in range(num_classes):
+        for slice_index in range(prob_map.shape[2]):  # 遍历深度 D
+            prob_slice = prob_map[0, class_index, slice_index, :, :].detach().cpu().numpy()
+
+            plt.imshow(prob_slice, cmap='jet')
+            plt.colorbar(label='Probability')
+            plt.title(f'Class {class_index} - Slice {slice_index}')
+
+            save_path = os.path.join(save_dir, f"{prefix}_class{class_index}_slice{slice_index}.png")
+            plt.savefig(save_path)
+            plt.close()
 
 
 if BACKGROUND_AS_CLASS:
@@ -147,6 +167,13 @@ for epoch in range(TRAINING_EPOCH):
         'optimizer_state_dict': optimizer.state_dict(),
         'loss': loss
     }, "checkpoint.pth")
+    
+    save_probability_maps_from_output(
+        target, 
+        num_classes=NUM_CLASSES, 
+        save_dir="prob_maps", 
+        prefix=f"epoch_{epoch}"
+    )
     
 
 
