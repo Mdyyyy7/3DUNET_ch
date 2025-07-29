@@ -168,12 +168,12 @@ for epoch in range(TRAINING_EPOCH):
         'loss': loss
     }, "checkpoint.pth")
     
-    save_probability_maps_from_output(
-        target, 
-        num_classes=NUM_CLASSES, 
-        save_dir="prob_maps", 
-        prefix=f"epoch_{epoch}"
-    )
+save_probability_maps_from_output(
+    target, 
+    num_classes=NUM_CLASSES, 
+    save_dir="prob_maps", 
+    prefix=f"epoch_{NUM_CLASSES}"
+)
     
 
 
