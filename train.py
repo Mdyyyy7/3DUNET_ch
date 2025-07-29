@@ -142,6 +142,14 @@ for epoch in range(TRAINING_EPOCH):
         min_valid_loss = avg_valid
         # Saving State Dict
         # torch.save(model.state_dict(), f'checkpoints/epoch{epoch}_valLoss{min_valid_loss}.pth')
+    
+    torch.save({
+        'epoch': epoch,
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        'loss': loss
+    }, "checkpoint.pth")
+    
 
 
 print("\n===== Average Accuracy Every 10 Epochs =====")
