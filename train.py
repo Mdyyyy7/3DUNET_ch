@@ -69,6 +69,7 @@ optimizer = Adam(params=model.parameters(),lr=0.0001)
 
 min_valid_loss = math.inf
 epoch_times = []
+accuracy_list = []
 
 for epoch in range(TRAINING_EPOCH):
 
@@ -99,7 +100,6 @@ for epoch in range(TRAINING_EPOCH):
     dice_sums = [0.0] * NUM_CLASSES
     recall_sums = [0.0] * NUM_CLASSES
     accuracy=0.0
-    accuracy_list = []
     valid_loss = 0.0
     model.eval()
     for data in val_dataloader:
