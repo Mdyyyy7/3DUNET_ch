@@ -172,7 +172,7 @@ save_probability_maps_from_output(
     target, 
     num_classes=NUM_CLASSES, 
     save_dir="prob_maps", 
-    prefix=f"epoch_{NUM_CLASSES}"
+    prefix=f"epoch_{TRAINING_EPOCH}"
 )
     
 
