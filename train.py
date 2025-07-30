@@ -7,14 +7,15 @@ from config import (
 from torch.nn import CrossEntropyLoss
 from dataset_1 import get_Dataloaders_new
 from torch.optim import Adam
+# from torch.utils.tensorboard import SummaryWriter
 from unet3d import UNet3D
 from transforms import (train_transform, train_transform_cuda,
                         val_transform, val_transform_cuda)
 import time
 from evaluation import calculate_accuracy,calculate_dice,calculate_recall
-from losses import weighted_categorical_crossentropy_with_fpr
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
+from torch.nn import BCEWithLogitsLoss
 
 
 
@@ -37,11 +38,11 @@ def save_probability_maps_from_output(output, num_classes=3, save_dir="prob_maps
             plt.close()
 
 
+
 if BACKGROUND_AS_CLASS:
   NUM_CLASSES += 1
 
 # writer = SummaryWriter("runs")
-# 设置cross_hair使用普通层或自定义层
 model = UNet3D(in_channels=IN_CHANNELS , num_classes= NUM_CLASSES,cross_hair=True)
 train_transforms = train_transform
 val_transforms = val_transform
@@ -59,17 +60,21 @@ train_dataloader, val_dataloader, _ = get_Dataloaders_new(train_transforms = tra
 weights = torch.Tensor(BCE_WEIGHTS)
 weights= weights.to("cuda")
 
-criterion = CrossEntropyLoss(weight=weights,ignore_index=-999)
-print("Use CrossEntropyLoss")
-# criterion = weighted_categorical_crossentropy_with_fpr(
-#     dim=1, from_logits=True, classes=NUM_CLASSES, threshold=0.5
-# )
-# print("Use self loss")
+# criterion = CrossEntropyLoss(weight=weights,ignore_index=-999)
+# print("Use CrossEntropyLoss")
+pos_w = torch.tensor(BCE_WEIGHTS).view(1, -1, 1, 1, 1).to("cuda")
+criterion = BCEWithLogitsLoss(pos_weight=pos_w)
+print("Use CEWithLogitsLoss")
+
+
+
 optimizer = Adam(params=model.parameters(),lr=0.0001)
 
 min_valid_loss = math.inf
 epoch_times = []
 accuracy_list = []
+train_loss_list = []
+valid_loss_list = []
 
 for epoch in range(TRAINING_EPOCH):
 
@@ -82,15 +87,14 @@ for epoch in range(TRAINING_EPOCH):
 
         ground_truth = ground_truth.squeeze(1)
         ground_truth = ground_truth.long()
-
-        ground_truth[ground_truth < 0] = -999
+        # ground_truth[ground_truth < 0] = -999
 
         optimizer.zero_grad()
         target = model(image)
 
-        # y_true = F.one_hot(ground_truth, num_classes=NUM_CLASSES).permute(0, 4, 1, 2, 3).float()
-        # loss = criterion(y_true, target)
-        loss = criterion(target, ground_truth)
+        y_true = F.one_hot(ground_truth, num_classes=NUM_CLASSES).permute(0, 4, 1, 2, 3).float()
+        loss = criterion(target, y_true)
+        # loss = criterion(target, ground_truth)
         # print(f'Train loss:{loss}')
         loss.backward()
         optimizer.step()
@@ -102,25 +106,27 @@ for epoch in range(TRAINING_EPOCH):
     accuracy=0.0
     valid_loss = 0.0
     model.eval()
-    for data in val_dataloader:
-      image, ground_truth = data['image'], data['label']
-      
+    with torch.no_grad():
+      for data in val_dataloader:
+        image, ground_truth = data['image'], data['label']
+        
 
-      ground_truth = ground_truth.squeeze(1)
-      ground_truth = ground_truth.long()
-      target = model(image)
-      # y_true = F.one_hot(ground_truth, num_classes=NUM_CLASSES).permute(0, 4, 1, 2, 3).float()
-      # loss = criterion(y_true, target)
-      loss = criterion(target,ground_truth)
-      # print(f'Valid loss:{loss}')
-      valid_loss += loss.item()
-      accuracy += calculate_accuracy(target, ground_truth)
-      dice_scores = calculate_dice(target, ground_truth, NUM_CLASSES)
-      for i, dice in enumerate(dice_scores):
-          dice_sums[i] += dice
-      recalls = calculate_recall(target, ground_truth, NUM_CLASSES)
-      for i, r in enumerate(recalls):
-          recall_sums[i] += r
+        ground_truth = ground_truth.squeeze(1)
+        ground_truth = ground_truth.long()
+
+        target = model(image)
+        y_true = F.one_hot(ground_truth, num_classes=NUM_CLASSES).permute(0, 4, 1, 2, 3).float()
+        loss = criterion(target, y_true)
+        # loss = criterion(target,ground_truth)
+        # print(f'Valid loss:{loss}')
+        valid_loss += loss.item()
+        accuracy += calculate_accuracy(target, ground_truth)
+        dice_scores = calculate_dice(target, ground_truth, NUM_CLASSES)
+        for i, dice in enumerate(dice_scores):
+            dice_sums[i] += dice
+        recalls = calculate_recall(target, ground_truth, NUM_CLASSES)
+        for i, r in enumerate(recalls):
+            recall_sums[i] += r
 
 
     # writer.add_scalar("Loss/Train", train_loss / len(train_dataloader), epoch)
@@ -129,6 +135,8 @@ for epoch in range(TRAINING_EPOCH):
     epoch_end = time.time()
     avg_train=train_loss / len(train_dataloader)
     avg_valid=valid_loss / len(val_dataloader)
+    train_loss_list.append(avg_train)
+    valid_loss_list.append(avg_valid)
    
     avg_accuracy = accuracy / len(val_dataloader)
     accuracy_list.append(avg_accuracy)
@@ -160,7 +168,7 @@ for epoch in range(TRAINING_EPOCH):
         min_valid_loss = avg_valid
         # Saving State Dict
         # torch.save(model.state_dict(), f'checkpoints/epoch{epoch}_valLoss{min_valid_loss}.pth')
-    
+
     torch.save({
         'epoch': epoch,
         'model_state_dict': model.state_dict(),
@@ -174,7 +182,6 @@ save_probability_maps_from_output(
     save_dir="prob_maps", 
     prefix=f"epoch_{TRAINING_EPOCH}"
 )
-    
 
 
 print("\n===== Average Accuracy Every 10 Epochs =====")
@@ -191,6 +198,15 @@ for i in range(0, len(epoch_times), 10):
 
 total_avg = sum(epoch_times) / len(epoch_times)
 print(f"\nOverall average time for all {TRAINING_EPOCH} epochs: {total_avg:.2f} seconds")
-# writer.flush()
-# writer.close()
+
+plt.figure()
+plt.plot(range(1, TRAINING_EPOCH+1), train_loss_list, label='Train Loss')
+plt.plot(range(1, TRAINING_EPOCH+1), valid_loss_list, label='Validation Loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.title('Loss vs Epoch')
+plt.legend()
+plt.grid(True)
+plt.savefig('loss_epoch.png')
+plt.show()
 
