@@ -1,3 +1,4 @@
+import monai
 import torch
 import torch.nn.functional as F
 from unet3d import UNet3D
@@ -27,8 +28,14 @@ else:
 model = UNet3D(in_channels=IN_CHANNELS, num_classes=NUM_CLASSES, cross_hair=True)
 model.to(device)
 
+torch.serialization.add_safe_globals([
+    monai.utils.enums.MetaKeys,
+    monai.utils.enums.SpaceKeys,
+    monai.utils.enums.TraceKeys
+])
 checkpoint = torch.load("checkpoint.pth", map_location=device)
 model.load_state_dict(checkpoint['model_state_dict'])
+
 model.eval()
 
 
@@ -57,6 +64,7 @@ with torch.no_grad():
 
 avg_accuracy = accuracy / len(test_dataloader)
 print(f"Test Accuracy: {avg_accuracy * 100:.2f}%")
+
 
 avg_dice_per_class = [dice_sums[i] / len(test_dataloader) for i in range(NUM_CLASSES)]
 avg_recall_per_class = [recall_sums[i] / len(test_dataloader) for i in range(NUM_CLASSES)]
