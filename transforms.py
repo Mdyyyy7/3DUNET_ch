@@ -10,6 +10,7 @@ from monai.transforms import (
     MapTransform,
     Resized,
     DivisiblePadd,
+    Lambdad,
     GaussianSmoothd
 )
 import numpy as np
@@ -96,23 +97,28 @@ train_transform = Compose(
 train_transform_cuda = Compose(
 [
   EnsureType(data_type='tensor'),
-  #EnsureChannelFirstd(keys=["image", "label"]),
-  Spacingd(keys=['image', 'label'], pixdim=(1., 1., 1.), mode=("bilinear", "nearest")),
-  RandFlipd(keys=['image', 'label'], prob=0.5, spatial_axis=0),
-  RandFlipd(keys=['image', 'label'], prob=0.5, spatial_axis=1),
-  RandFlipd(keys=['image', 'label'], prob=0.5, spatial_axis=2),
+  # #EnsureChannelFirstd(keys=["image", "label"]),
+  # Spacingd(keys=['image', 'label'], pixdim=(1., 1., 1.), mode=("bilinear", "nearest")),
+  # RandFlipd(keys=['image', 'label'], prob=0.5, spatial_axis=0),
+  # RandFlipd(keys=['image', 'label'], prob=0.5, spatial_axis=1),
+  # RandFlipd(keys=['image', 'label'], prob=0.5, spatial_axis=2),
 
-  # 高斯滤波器
-  # GaussianSmoothd(keys=["image"], sigma=[1.0, 1.0, 1.0]),
-  # CLAHE
-  # CLAHETransform3D(keys=["image"], clip_limit=2.0, tile_grid_size=(8, 8)),
+  # # 高斯滤波器
+  # # GaussianSmoothd(keys=["image"], sigma=[1.0, 1.0, 1.0]),
+  # # CLAHE
+  # # CLAHETransform3D(keys=["image"], clip_limit=2.0, tile_grid_size=(8, 8)),
 
-  NormalizeIntensityd(keys='image', nonzero=True, channel_wise=True),
-  RandScaleIntensityd(keys='image', factors=0.1, prob=1.0),
-  RandShiftIntensityd(keys='image', offsets=0.1, prob=1.0),
+  # NormalizeIntensityd(keys='image', nonzero=True, channel_wise=True),
+  # RandScaleIntensityd(keys='image', factors=0.1, prob=1.0),
+  # RandShiftIntensityd(keys='image', offsets=0.1, prob=1.0),
+  
+  Lambdad(
+    keys="image",
+    func=lambda x: (x.clamp(min=-1000, max=400) + 1000) / 1400
+  ),
   DivisiblePadd(k=16, keys=["image", "label"]),
 
-  Resized(keys=["image", "label"], spatial_size=(48,48,48), mode=("trilinear", "nearest")),
+  # Resized(keys=["image", "label"], spatial_size=(48,48,48), mode=("trilinear", "nearest")),
 
   ToTensord(keys=['image', 'label'], device='cuda')
 ]
@@ -142,10 +148,15 @@ val_transform_cuda = Compose(
   #EnsureChannelFirstd(keys=["image", "label"]),
 
 
-  NormalizeIntensityd(keys='image', nonzero=True, channel_wise=True),
+  # NormalizeIntensityd(keys='image', nonzero=True, channel_wise=True),
+  
+  Lambdad(
+    keys="image",
+    func=lambda x: (x.clamp(min=-1000, max=400) + 1000) / 1400
+  ),
   DivisiblePadd(k=16, keys=["image", "label"]),
 
-  Resized(keys=["image", "label"], spatial_size=(48,48,48),  mode=("trilinear", "nearest")),
+  # Resized(keys=["image", "label"], spatial_size=(48,48,48),  mode=("trilinear", "nearest")),
 
   ToTensord(keys=['image', 'label'], device='cuda')
 ]
