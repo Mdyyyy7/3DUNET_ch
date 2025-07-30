@@ -85,8 +85,7 @@ for epoch in range(TRAINING_EPOCH):
         image, ground_truth = data['image'], data['label']
         
 
-        ground_truth = ground_truth.squeeze(1)
-        ground_truth = ground_truth.long()
+        ground_truth = ground_truth.squeeze(1).long()
         # ground_truth[ground_truth < 0] = -999
 
         optimizer.zero_grad()

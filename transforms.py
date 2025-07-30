@@ -118,7 +118,7 @@ train_transform_cuda = Compose(
   ),
   DivisiblePadd(k=16, keys=["image", "label"]),
 
-  # Resized(keys=["image", "label"], spatial_size=(48,48,48), mode=("trilinear", "nearest")),
+  Resized(keys=["image", "label"], spatial_size=(48,48,48), mode=("trilinear", "nearest")),
 
   ToTensord(keys=['image', 'label'], device='cuda')
 ]
@@ -156,7 +156,7 @@ val_transform_cuda = Compose(
   ),
   DivisiblePadd(k=16, keys=["image", "label"]),
 
-  # Resized(keys=["image", "label"], spatial_size=(48,48,48),  mode=("trilinear", "nearest")),
+  Resized(keys=["image", "label"], spatial_size=(48,48,48),  mode=("trilinear", "nearest")),
 
   ToTensord(keys=['image', 'label'], device='cuda')
 ]
