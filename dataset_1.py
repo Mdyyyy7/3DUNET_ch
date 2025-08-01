@@ -23,7 +23,7 @@ class LungVesselSegmentation(Dataset):
     self.mode = mode
 
     file_list = [f for f in os.listdir(self.image_dir)]
-    self.file_list=file_list[:30]
+    self.file_list=file_list[:10]
 
     # 划分数据集
     total = len(self.file_list)

@@ -14,10 +14,12 @@ class Convolution3DCH(nn.Module):
 
         ks = self.kernel
 
-
         pad1=(0, kwargs['padding'], kwargs['padding'])
         pad2=(kwargs['padding'], 0, kwargs['padding'])
         pad3=(kwargs['padding'], kwargs['padding'], 0)
+        # pad1=kwargs['padding']
+        # pad2=kwargs['padding']
+        # pad3=kwargs['padding']
 
         self.convx = nn.Conv3d(
             in_channels=self.in_channels,

@@ -70,26 +70,26 @@ def calculate_recall(prediction, ground_truth, num_classes, ignore_index=-999):
 
         return recall_scores
 
-# def calculate_f1_score(prediction, ground_truth, num_classes, ignore_index=-999):
-#     with torch.no_grad():
-#         _, predicted = torch.max(prediction, 1)  # [B, D, H, W]
-#         f1_scores = []
+def per_class_accuracy(prediction, ground_truth, num_classes, ignore_index=None):
+    with torch.no_grad():
+        _, predicted = torch.max(prediction, 1)
 
-#         for cls in range(num_classes):
-#             pred_cls = (predicted == cls)
-#             gt_cls = (ground_truth == cls)
-#             mask = (ground_truth != ignore_index)
+        if ignore_index is not None:
+            mask = (ground_truth != ignore_index)
+            predicted = predicted[mask]
+            ground_truth = ground_truth[mask]
 
-#             pred_cls = pred_cls & mask
-#             gt_cls = gt_cls & mask
+        precisions = []
+        for cls in range(num_classes):
+            pred_cls_mask = (predicted == cls)
+            total_pred_cls = pred_cls_mask.sum().item()
 
-#             TP = (pred_cls & gt_cls).sum().item()
-#             FP = (pred_cls & (~gt_cls)).sum().item()
-#             FN = ((~pred_cls) & gt_cls).sum().item()
+            if total_pred_cls == 0:
+                precisions.append(0)
+                continue
 
-#             precision = TP / (TP + FP) if (TP + FP) > 0 else 0
-#             recall = TP / (TP + FN) if (TP + FN) > 0 else 0
-#             f1 = (2 * precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
-#             f1_scores.append(f1)
+            correct_cls = ((predicted == cls) & (ground_truth == cls)).sum().item()
+            precision_cls = correct_cls / total_pred_cls
+            precisions.append(precision_cls)
 
-#         return f1_scores
+    return precisions
