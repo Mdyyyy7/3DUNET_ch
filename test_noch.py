@@ -1,11 +1,12 @@
 import monai
 import torch
+import numpy as np
 from unet3d import UNet3D
 from dataset_1 import get_Dataloaders_new
 from transforms import (train_transform, train_transform_cuda,
                         val_transform, val_transform_cuda)
 from config import NUM_CLASSES, IN_CHANNELS, BACKGROUND_AS_CLASS, TRAIN_CUDA
-from evaluation import calculate_accuracy, calculate_dice, calculate_recall,per_class_accuracy
+from evaluation import calculate_accuracy, calculate_dice, calculate_recall,per_class_accuracy,calculate_iou,calculate_hausdorff
 
 
 if BACKGROUND_AS_CLASS:
@@ -36,7 +37,7 @@ torch.serialization.add_safe_globals([
 ])
 checkpoint = torch.load("checkpoint_noch.pth", map_location=device)
 model.load_state_dict(checkpoint['model_state_dict'])
-print('Test no cross_hair model')
+print("Test no cross_hair model")
 model.eval()
 
 
@@ -47,6 +48,8 @@ accuracy = 0.0
 dice_sums = [0.0] * NUM_CLASSES
 recall_sums = [0.0] * NUM_CLASSES
 accuracy_sums = [0.0] * NUM_CLASSES
+iou_sums = [0.0] * NUM_CLASSES
+hd_sums = [0.0] * NUM_CLASSES
 
 with torch.no_grad():
     for data in test_dataloader:
@@ -65,6 +68,13 @@ with torch.no_grad():
         accuracy_scores = per_class_accuracy(output, ground_truth, NUM_CLASSES)
         for i, r in enumerate(accuracy_scores):
             accuracy_sums[i] += r
+        iou_scores = calculate_iou(output, ground_truth, NUM_CLASSES)
+        for i, iou in enumerate(iou_scores):
+            iou_sums[i] += iou
+        hd_scores = calculate_hausdorff(output, ground_truth, NUM_CLASSES)
+        for i, h in enumerate(hd_scores):
+            if not np.isnan(h):  # 排除无效值
+                hd_sums[i] += h
 
 
 avg_accuracy = accuracy / len(test_dataloader)
@@ -74,6 +84,8 @@ print(f"Test Accuracy: {avg_accuracy * 100:.2f}%")
 avg_dice_per_class = [dice_sums[i] / len(test_dataloader) for i in range(NUM_CLASSES)]
 avg_recall_per_class = [recall_sums[i] / len(test_dataloader) for i in range(NUM_CLASSES)]
 avg_accuracy_per_class = [accuracy_sums[i] / len(test_dataloader) for i in range(NUM_CLASSES)]
+avg_iou_per_class = [iou_sums[i] / len(test_dataloader) for i in range(NUM_CLASSES)]
+avg_hd_per_class = [hd_sums[i] / len(test_dataloader) for i in range(NUM_CLASSES)]
 
 for i, d in enumerate(avg_dice_per_class):
     print(f"Dice Class {i}: {d:.4f}")
@@ -83,6 +95,12 @@ for i, r in enumerate(avg_recall_per_class):
 
 for i, r in enumerate(avg_accuracy_per_class):
       print(f"Accuracy Class {i}: {r:.4f}")
+
+for i, iou in enumerate(avg_iou_per_class):
+    print(f"IoU Class {i}: {iou:.4f}")
+
+for i, h in enumerate(avg_hd_per_class):
+    print(f"Hausdorff Distance Class {i}: {h:.4f}")
 
 total_params = sum(p.numel() for p in model.parameters())
 print(f"Total number of parameters: {total_params:,}")

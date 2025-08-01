@@ -1,5 +1,6 @@
 import torch
-
+from scipy.spatial.distance import directed_hausdorff
+import numpy as np
 
 
 
@@ -18,7 +19,7 @@ def calculate_accuracy(prediction, ground_truth, ignore_index=-999):
 def calculate_dice(prediction, ground_truth, num_classes, ignore_index=-999):
 
     with torch.no_grad():
-        _, predicted = torch.max(prediction, 1)  # [B, D, H, W]
+        _, predicted = torch.max(prediction, 1)  
         dice_scores = []
 
         for cls in range(num_classes):
@@ -34,7 +35,7 @@ def calculate_dice(prediction, ground_truth, num_classes, ignore_index=-999):
             gt_sum = gt_cls.sum().item()
 
             if pred_sum + gt_sum == 0:
-                dice = 1.0  # 空类，预测和标签都没有该类，定义为完美
+                dice = 1.0  
             else:
                 dice = (2.0 * intersection) / (pred_sum + gt_sum)
 
@@ -93,3 +94,53 @@ def per_class_accuracy(prediction, ground_truth, num_classes, ignore_index=None)
             precisions.append(precision_cls)
 
     return precisions
+
+def calculate_iou(prediction, ground_truth, num_classes, ignore_index=None):
+    with torch.no_grad():
+        _, predicted = torch.max(prediction, 1)
+
+        if ignore_index is not None:
+            mask = (ground_truth != ignore_index)
+            predicted = predicted[mask]
+            ground_truth = ground_truth[mask]
+        iou_list=[]
+        for cls in range(num_classes):
+            pred_cls_mask = (predicted == cls)
+            gt_cls_mask = (ground_truth == cls)
+
+            intersection = (pred_cls_mask & gt_cls_mask).sum().float()
+            union = (pred_cls_mask | gt_cls_mask).sum().float()
+
+            if union == 0:
+                iou = 1.0  
+            else:
+                iou = intersection / union
+            iou_list.append(iou.item())
+
+    return iou_list
+            
+def calculate_hausdorff(prediction, ground_truth, num_classes, ignore_index=-999):
+
+    with torch.no_grad():
+        _, predicted = torch.max(prediction, 1) 
+        hd_scores = []
+
+        for cls in range(num_classes):
+            pred_cls = (predicted == cls)
+            gt_cls = (ground_truth == cls)
+            mask = (ground_truth != ignore_index)
+
+            pred_cls = pred_cls & mask
+            gt_cls = gt_cls & mask
+
+            pred_pts = np.argwhere(pred_cls.cpu().numpy())
+            gt_pts = np.argwhere(gt_cls.cpu().numpy())
+
+            if len(pred_pts) == 0 or len(gt_pts) == 0:
+                hd_scores.append(float('nan'))  
+            else:
+                hd1 = directed_hausdorff(pred_pts, gt_pts)[0]
+                hd2 = directed_hausdorff(gt_pts, pred_pts)[0]
+                hd_scores.append(max(hd1, hd2))
+
+        return hd_scores
