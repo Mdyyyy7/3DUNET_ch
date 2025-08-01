@@ -44,6 +44,7 @@ if BACKGROUND_AS_CLASS:
 
 # writer = SummaryWriter("runs")
 model = UNet3D(in_channels=IN_CHANNELS , num_classes= NUM_CLASSES, cross_hair=True)
+print('Train model with cross_hair')
 train_transforms = train_transform
 val_transforms = val_transform
 
