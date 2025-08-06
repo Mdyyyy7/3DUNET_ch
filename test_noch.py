@@ -1,5 +1,7 @@
 import monai
 import torch
+import os
+import time
 import numpy as np
 from unet3d import UNet3D
 from dataset_1 import get_Dataloaders_new
@@ -43,7 +45,8 @@ model.eval()
 
 _, _, test_dataloader = get_Dataloaders_new(train_transforms = train_transforms, val_transforms = val_transforms, test_transforms = val_transforms)
 
-
+os.makedirs("predictions_noch", exist_ok=True)
+prediction_times = []
 accuracy = 0.0
 dice_sums = [0.0] * NUM_CLASSES
 recall_sums = [0.0] * NUM_CLASSES
@@ -52,29 +55,46 @@ iou_sums = [0.0] * NUM_CLASSES
 hd_sums = [0.0] * NUM_CLASSES
 
 with torch.no_grad():
-    for data in test_dataloader:
+    for idx, data in enumerate(test_dataloader):
         image, ground_truth = data['image'], data['label']
         ground_truth = ground_truth.squeeze(1).long()
 
+        start_time = time.time()
         output = model(image)
+        end_time = time.time()
 
-        accuracy += calculate_accuracy(output, ground_truth)
+        elapsed = end_time - start_time
+        prediction_times.append(elapsed)
+        print(f"Sample {idx+1} prediction time: {elapsed:.4f} seconds")
+
+        np.save(f"predictions_noch/output_{idx+1}.npy", output.cpu().numpy())
+    
+        acc = calculate_accuracy(output, ground_truth)
         dice_scores = calculate_dice(output, ground_truth, NUM_CLASSES)
-        for i, d in enumerate(dice_scores):
-            dice_sums[i] += d
         recalls = calculate_recall(output, ground_truth, NUM_CLASSES)
-        for i, r in enumerate(recalls):
-            recall_sums[i] += r
-        accuracy_scores = per_class_accuracy(output, ground_truth, NUM_CLASSES)
-        for i, r in enumerate(accuracy_scores):
-            accuracy_sums[i] += r
+        per_class_acc = per_class_accuracy(output, ground_truth, NUM_CLASSES)
         iou_scores = calculate_iou(output, ground_truth, NUM_CLASSES)
-        for i, iou in enumerate(iou_scores):
-            iou_sums[i] += iou
         hd_scores = calculate_hausdorff(output, ground_truth, NUM_CLASSES)
-        for i, h in enumerate(hd_scores):
-            if not np.isnan(h):  # 排除无效值
-                hd_sums[i] += h
+
+        print(f"\n=== Sample {idx+1} ===")
+        print(f"Prediction time: {elapsed:.4f} seconds")
+        print(f"Accuracy: {acc:.4f}")
+        for i in range(NUM_CLASSES):
+            print(f"Class {i} -> Dice: {dice_scores[i]:.4f}, "
+                  f"Recall: {recalls[i]:.4f}, "
+                  f"Accuracy: {per_class_acc[i]:.4f}, "
+                  f"IoU: {iou_scores[i]:.4f}, "
+                  f"Hausdorff: {hd_scores[i]:.4f}")
+            
+
+        accuracy += acc
+        for i in range(NUM_CLASSES):
+            dice_sums[i] += dice_scores[i]
+            recall_sums[i] += recalls[i]
+            accuracy_sums[i] += per_class_acc[i]
+            iou_sums[i] += iou_scores[i]
+            if not np.isnan(hd_scores[i]):
+                hd_sums[i] += hd_scores[i]
 
 
 avg_accuracy = accuracy / len(test_dataloader)
@@ -105,5 +125,6 @@ for i, h in enumerate(avg_hd_per_class):
 total_params = sum(p.numel() for p in model.parameters())
 print(f"Total number of parameters: {total_params:,}")
 
-
+avg_pred_time = sum(prediction_times) / len(prediction_times)
+print(f"\nAverage prediction time: {avg_pred_time:.4f} seconds")
 
