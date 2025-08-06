@@ -23,7 +23,7 @@ train_transform = Compose(
     func=lambda x: (x.clamp(min=-1000, max=400) + 1000) / 1400
   ),
   DivisiblePadd(k=16, keys=["image", "label"]),
-  # Resized(keys=["image", "label"], spatial_size=(48,48,48), mode=("trilinear", "nearest")),
+  Resized(keys=["image", "label"], spatial_size=(160,160,160), mode=("trilinear", "nearest")),
   ToTensord(keys=['image', 'label'])
 ]
 )
@@ -40,7 +40,7 @@ train_transform_cuda = Compose(
     func=lambda x: (x.clamp(min=-1000, max=400) + 1000) / 1400
   ),
   DivisiblePadd(k=16, keys=["image", "label"]),
-  # Resized(keys=["image", "label"], spatial_size=(48,48,48), mode=("trilinear", "nearest")),
+  Resized(keys=["image", "label"], spatial_size=(160,160,160), mode=("trilinear", "nearest")),
   ToTensord(keys=['image', 'label'], device='cuda')
 ]
 )
@@ -56,7 +56,7 @@ val_transform = Compose(
     func=lambda x: (x.clamp(min=-1000, max=400) + 1000) / 1400
   ),
   DivisiblePadd(k=16, keys=["image", "label"]),
-  # Resized(keys=["image", "label"], spatial_size=(48,48,48),  mode=("trilinear", "nearest")),
+  Resized(keys=["image", "label"], spatial_size=(160,160,160),  mode=("trilinear", "nearest")),
   ToTensord(keys=['image', 'label'])
 ]
 )
@@ -72,7 +72,7 @@ val_transform_cuda = Compose(
     func=lambda x: (x.clamp(min=-1000, max=400) + 1000) / 1400
   ),
   DivisiblePadd(k=16, keys=["image", "label"]),
-  # Resized(keys=["image", "label"], spatial_size=(48,48,48),  mode=("trilinear", "nearest")),
+  Resized(keys=["image", "label"], spatial_size=(160,160,160),  mode=("trilinear", "nearest")),
   ToTensord(keys=['image', 'label'], device='cuda')
 ]
 )
