@@ -11,9 +11,9 @@ class ConvBlock3D(nn.Module):
     Conv = Convolution3DCH if cross_hair else nn.Conv3d
 
     
-    self.conv1 = Conv(in_channels= in_channels, out_channels=out_channels//2, kernel_size=(3,3,3), padding=1,stride=1)
+    self.conv1 = Conv(in_channels= in_channels, out_channels=out_channels//2, kernel_size=(5,5,5), padding=2,stride=1)
     self.bn1 = nn.BatchNorm3d(num_features=out_channels//2)
-    self.conv2 = Conv(in_channels= out_channels//2, out_channels=out_channels, kernel_size=(3,3,3), padding=1,stride=1)
+    self.conv2 = Conv(in_channels= out_channels//2, out_channels=out_channels, kernel_size=(5,5,5), padding=2,stride=1)
     self.bn2 = nn.BatchNorm3d(num_features=out_channels)
     self.relu = nn.ReLU()
     self.bottleneck = bottleneck
@@ -42,8 +42,8 @@ class Decoderblock(nn.Module):
     self.upconv1 = nn.ConvTranspose3d(in_channels=in_channels, out_channels=in_channels, kernel_size=(2, 2, 2), stride=2)
     self.relu = nn.ReLU()
     self.bn = nn.BatchNorm3d(num_features=in_channels//2)
-    self.conv1 = Conv(in_channels=in_channels+res_channels, out_channels=in_channels//2, kernel_size=(3,3,3), padding=1,stride=1)
-    self.conv2 = Conv(in_channels=in_channels//2, out_channels=in_channels//2, kernel_size=(3,3,3), padding=1,stride=1)
+    self.conv1 = Conv(in_channels=in_channels+res_channels, out_channels=in_channels//2, kernel_size=(5,5,5), padding=2,stride=1)
+    self.conv2 = Conv(in_channels=in_channels//2, out_channels=in_channels//2, kernel_size=(5,5,5), padding=2,stride=1)
     self.last_layer = last_layer
     if last_layer:
         self.conv3 = Conv(in_channels=in_channels//2, out_channels=num_classes, kernel_size=(1,1,1), padding=0,stride=1)
