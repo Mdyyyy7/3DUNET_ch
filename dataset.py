@@ -15,6 +15,14 @@ from config import (
 
 
 class LungVesselSegmentation(Dataset):
+  """
+    Medical image dataset class
+    -- __init__()
+    path: path of the dataset
+    split_ratios: the ratio of training set, validation set, and test set
+    transforms: transformation of each sample
+    mode: data loading mode
+    """
   def __init__(self, path, split_ratios=[0.6, 0.2, 0.2], transforms=None, mode=None):
     self.image_dir = os.path.join(path, "ct_scan")
     self.artery_dir = os.path.join(path, "annotation", "artery")
@@ -25,7 +33,6 @@ class LungVesselSegmentation(Dataset):
     file_list = [f for f in os.listdir(self.image_dir)]
     self.file_list=file_list
 
-    # 划分数据集
     total = len(self.file_list)
     num_list = [int(r * total) for r in split_ratios]
     if sum(num_list) < total:
@@ -35,7 +42,6 @@ class LungVesselSegmentation(Dataset):
     self.val = self.file_list[num_list[0]:num_list[0]+num_list[1]]
     self.test = self.file_list[num_list[0]+num_list[1]:]
 
-# 设置训练，验证或测试模式
   def set_mode(self, mode):
         self.mode = mode
 
@@ -49,7 +55,7 @@ class LungVesselSegmentation(Dataset):
     return len(self.train)
 
   def __getitem__(self, idx):
-    # 获取文件名
+
     if self.mode == "train":
         file_name = self.train[idx]
     elif self.mode == "val":
@@ -63,7 +69,7 @@ class LungVesselSegmentation(Dataset):
     artery_path = os.path.join(self.artery_dir, file_name)
     vein_path = os.path.join(self.vein_dir, file_name)
 
-    # 获取三维体素数据
+
     image = np.load(image_path)["data"] 
     artery = np.load(artery_path)["data"]
     vein = np.load(vein_path)["data"]
@@ -79,7 +85,7 @@ class LungVesselSegmentation(Dataset):
     # unique_labels, counts = np.unique(label, return_counts=True)
     # print(f"labels.shape1: {unique_labels}")
 
-    # 数据处理
+
     processed_out = {'name': file_name, 'image': image, 'label': label}
     if self.transforms:
       if self.mode == "train":

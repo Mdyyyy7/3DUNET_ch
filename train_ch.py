@@ -5,7 +5,7 @@ from config import (
     TRAINING_EPOCH, NUM_CLASSES, IN_CHANNELS, BCE_WEIGHTS, BACKGROUND_AS_CLASS, TRAIN_CUDA
 )
 from torch.nn import CrossEntropyLoss
-from dataset_1 import get_Dataloaders_new
+from dataset import get_Dataloaders_new
 from torch.optim import Adam
 # from torch.utils.tensorboard import SummaryWriter
 from unet3d import UNet3D
