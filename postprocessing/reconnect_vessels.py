@@ -1,4 +1,18 @@
+"""
+reconnect_vessels.py
 
+Implements post-processing of model prediction results.
+
+The following functions are reused/adapted from:
+- select_region (connectivity.py)
+- perform_distance_trans (distance_transform.py)
+- soft_dilate, soft_erode, soft_skel (get_skeleton.py)
+
+Source project:
+HiPaS_AV_Segmentation by Yuetan Chu
+Repository: https://github.com/Arturia-Pendragon-Iris/HiPaS_AV_Segmentation
+License: MIT License
+"""
 import argparse
 import numpy as np
 import nibabel as nib

@@ -2,11 +2,10 @@
 unet3d.py
 
 This document implements the construction of a 3D U-net network.
-Code implementation reference: https://github.com/amir-aghdam/3D-UNet/tree/main
-
+Code implementation reference: 
+  Repository: https://github.com/amir-aghdam/3D-UNet/tree/main
+  Author: Amir Aghdam
 """
-
-
 from torch import nn
 import torch
 from layer import Convolution3DCH

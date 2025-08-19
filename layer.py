@@ -1,12 +1,12 @@
 """
 layer.py
 
-This file implements a custom convolution layer using a two-dimensional crosshair convolution filter.
-Code implementation reference: https://github.com/giesekow/deepvesselnet
+This file implements a custom convolution layer using the two-dimensional cross-hair convolution filter.
+Code implementation reference: 
+  Repository: https://github.com/giesekow/deepvesselnet/tree/master
+  Author: Giles Tetteh
 As required by the project, the original TensorFlow implementation is changed to a PyTorch implementation.
 """
-
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
