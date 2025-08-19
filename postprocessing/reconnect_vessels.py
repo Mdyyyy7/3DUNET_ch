@@ -7,7 +7,7 @@ from skimage.measure import label, regionprops
 import torch
 
 import sys
-sys.path.append(r"D:\UCL\PHAS0077\postpocessing\HiPas_postprocessing")
+sys.path.append(r"HiPas_postprocessing")
 from connectivity import select_region
 from distance_transform import perform_distance_trans
 from get_skeleton import soft_dilate, soft_erode, soft_skel

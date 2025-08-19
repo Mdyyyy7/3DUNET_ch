@@ -35,7 +35,7 @@ def evaluate_multilabel(pred_path, gt_path, name="", target_labels=None):
         dsc = dice_score(pred_mask, gt_mask)
         avg_assd = assd_score(pred_mask, gt_mask, voxelspacing=spacing)
         conn_err = connectivity_error_ratio(pred_mask, gt_mask)
-        print(f"\n=== {name} 标签 {target_labels} 评估结果 ===")
+        print(f"\n=== {name} label {target_labels} Evaluation result ===")
         print(f"Dice (DSC): {dsc:.4f}")
         print(f"ASSD: {avg_assd:.4f} mm")
         print(f"ϵβ₀: {conn_err:.4f}")
@@ -48,7 +48,7 @@ def evaluate_multilabel(pred_path, gt_path, name="", target_labels=None):
             dsc = dice_score(pred_mask, gt_mask)
             avg_assd = assd_score(pred_mask, gt_mask, voxelspacing=spacing)
             conn_err = connectivity_error_ratio(pred_mask, gt_mask)
-            print(f"\n=== {name} 类别 {lbl} 评估结果 ===")
+            print(f"\n=== {name} label {lbl} Evaluation result ===")
             print(f"Dice (DSC): {dsc:.4f}")
             print(f"ASSD: {avg_assd:.4f} mm")
             print(f"ϵβ₀: {conn_err:.4f}")
@@ -75,11 +75,11 @@ if __name__ == "__main__":
     summary("After", after)
 
 
-
+    # test target class
     labels_to_evaluate = [2, 3]
-    evaluate_multilabel(before_path, gt_path, name="连接前", target_labels=labels_to_evaluate)
-    evaluate_multilabel(after_path, gt_path, name="连接后", target_labels=labels_to_evaluate)
+    evaluate_multilabel(before_path, gt_path, name="before connecting", target_labels=labels_to_evaluate)
+    evaluate_multilabel(after_path, gt_path, name="after connecting", target_labels=labels_to_evaluate)
 
-   
-    # evaluate_multilabel(before_path, gt_path, name="连接前", target_labels=None)
-    # evaluate_multilabel(after_path, gt_path, name="连接后", target_labels=None)final_connected_seg.nii.gz
+    # test all classes
+    # evaluate_multilabel(before_path, gt_path, name="before connecting", target_labels=None)
+    # evaluate_multilabel(after_path, gt_path, name="after connecting", target_labels=None)
