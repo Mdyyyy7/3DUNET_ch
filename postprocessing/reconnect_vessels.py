@@ -29,7 +29,7 @@ from get_skeleton import soft_dilate, soft_erode, soft_skel
 
 
 def mm_to_vox(mm, spacing):
-    """Convert millimeter threshold to voxel count (conservative: use min spacing)."""
+    """Convert millimeter threshold to voxel count (conservative: use min spacing)"""
     return max(1, int(round(mm / float(min(spacing)))))
 
 def to_tensor5(x_np):
@@ -50,7 +50,7 @@ def filter_by_area_and_distance(mask_np, min_size_vox, near_mask_np, near_radius
     Distance-aware filtering:
     Keep components if (area >= min_size) OR (min distance to near_mask <= near_radius)
     """
-    lab = label((mask_np > 0).astype(np.uint8), connectivity=1)  # 3D: 6-neighbourhood
+    lab = label((mask_np > 0).astype(np.uint8), connectivity=1)  
     if lab.max() == 0:
         return np.zeros_like(mask_np, dtype=np.float32)
 
@@ -159,7 +159,7 @@ def process_one_label(mask_np, spacing, args, name="artery"):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Vessel reconnection post-processing for labels 2 (artery) and 3 (vein).")
+    ap = argparse.ArgumentParser(description="Vessel reconnection post-processing")
     ap.add_argument("--in_path", required=True, help=".nii or .nii.gz input path")
     ap.add_argument("--out_path", required=True, help="output .nii.gz path")
 
