@@ -4,15 +4,18 @@ from medpy.metric.binary import dc, assd
 from skimage.measure import label
 
 def dice_score(pred, gt):
+    """Compute Dice Similarity Coefficient (DSC)."""
     return dc(pred, gt)
 
 def assd_score(pred, gt, voxelspacing=None):
+    """Compute Average Symmetric Surface Distance (ASSD)."""
     try:
         return assd(pred, gt, voxelspacing=voxelspacing)
     except RuntimeError:
         return np.nan  
 
 def connectivity_error_ratio(pred, gt):
+    """Compute connectivity error ratio (ϵβ₀)."""
     beta0_pred = label(pred, connectivity=3).max()
     beta0_gt = label(gt, connectivity=3).max()
     if beta0_gt == 0:
@@ -20,6 +23,7 @@ def connectivity_error_ratio(pred, gt):
     return abs(beta0_pred - beta0_gt) / beta0_gt
 
 def load_mask(path, target_labels=None):
+    """Load NIfTI mask. Return full mask or binary mask for given labels."""
     img = nib.load(path)
     data = img.get_fdata()
     if target_labels is None:
@@ -29,6 +33,7 @@ def load_mask(path, target_labels=None):
         return mask, img.header.get_zooms()
 
 def evaluate_multilabel(pred_path, gt_path, name="", target_labels=None):
+    """Evaluate segmentation with DSC, ASSD, and connectivity error."""
     if target_labels is not None:
         pred_mask, spacing = load_mask(pred_path, target_labels)
         gt_mask, _ = load_mask(gt_path, target_labels)
@@ -55,14 +60,14 @@ def evaluate_multilabel(pred_path, gt_path, name="", target_labels=None):
 
 
 def summary(name, arr):
-    import numpy as np
+    """Print array stats: shape, voxel counts, unique labels."""
     print(f"[{name}] shape={arr.shape} voxels(A)={(arr==2).sum()} voxels(V)={(arr==3).sum()} uniq={np.unique(arr)[:8]}")
 
 
 if __name__ == "__main__":   
 
-    gt_path = "COPDG13_GT_corrected.nii.gz"          
-    before_path = "COPDG13_training_result.nii.gz"  
+    gt_path = "Ground_truth.nii.gz"          
+    before_path = "input_vessel.nii.gz"  
     after_path = "vessel_reconnected.nii.gz" 
     
 
