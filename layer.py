@@ -1,3 +1,12 @@
+"""
+layer.py
+
+This file implements a custom convolution layer using a two-dimensional crosshair convolution filter.
+Code implementation reference: https://github.com/giesekow/deepvesselnet
+As required by the project, the original TensorFlow implementation is changed to a PyTorch implementation.
+"""
+
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -14,12 +23,11 @@ class Convolution3DCH(nn.Module):
 
         ks = self.kernel
 
+        # Padding only on the slice plane
         pad1=(0, kwargs['padding'], kwargs['padding'])
         pad2=(kwargs['padding'], 0, kwargs['padding'])
         pad3=(kwargs['padding'], kwargs['padding'], 0)
-        # pad1=kwargs['padding']
-        # pad2=kwargs['padding']
-        # pad3=kwargs['padding']
+
 
         self.convx = nn.Conv3d(
             in_channels=self.in_channels,
@@ -50,12 +58,7 @@ class Convolution3DCH(nn.Module):
         y_axis = self.convy(x)
         z_axis = self.convz(x)
         
-        # print("x:", x_axis.shape)
-        # print("y:", y_axis.shape)
-        # print("z:", z_axis.shape)
         out = x_axis + y_axis + z_axis
-        # if self.activation != 'linear':
-        #     out = getattr(F, self.activation)(out)
         return out
 
     def get_weights(self):
@@ -73,15 +76,3 @@ class Convolution3DCH(nn.Module):
         if 'z_weights' in weights:
             self.convz.load_state_dict(weights['z_weights'])
 
-
-# class Conv3DFunctional(nn.Module):
-#     def __init__(self, in_channels, out_channels, kernel_size, activation='linear', padding='same', stride=1):
-#         super().__init__()
-#         self.conv = nn.Conv3d(in_channels = in_channels, out_channels = out_channels, kernel_size = kernel_size, padding = padding, stride = stride)
-#         self.activation=activation
-
-#     def forward(self, x):
-#         x = self.conv(x)
-#         if self.activation != 'linear':
-#             x = getattr(F, self.activation)(x)
-#         return x

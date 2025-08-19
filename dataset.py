@@ -97,16 +97,20 @@ class LungVesselSegmentation(Dataset):
       else:
         processed_out = self.transforms(processed_out)
 
-    # image = processed_out['image']
-    # label = processed_out['label']
-
-    # print(f"Image shape2: {image.shape}")
-    # print(f"Label shape2: {label.shape}")
 
     return processed_out
 
 
 def get_Dataloaders_new(train_transforms, val_transforms, test_transforms):
+  """
+  Create train, validation and test dataloaders
+  Args:
+      train_transforms: preprocessing for training data
+      val_transforms: preprocessing for validation data
+      test_transforms: preprocessing for testing data
+  Returns:
+      tuple: train_dataloader, val_dataloader, test_dataloader
+  """
   dataset = LungVesselSegmentation(path=DATASET_PATH_NEW, split_ratios=TRAIN_VAL_TEST_SPLIT, transforms=[train_transforms, val_transforms, test_transforms])
 
   train_set, val_set, test_set = copy.deepcopy(dataset), copy.deepcopy(dataset), copy.deepcopy(dataset)

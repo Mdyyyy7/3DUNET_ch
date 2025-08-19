@@ -5,7 +5,9 @@ import numpy as np
 
 
 def calculate_accuracy(prediction, ground_truth, ignore_index=-999):
-
+    """
+    Calculate overall accuracy
+    """
     with torch.no_grad():
         _, predicted = torch.max(prediction, 1)
         mask = (ground_truth != ignore_index)
@@ -17,7 +19,9 @@ def calculate_accuracy(prediction, ground_truth, ignore_index=-999):
 
 
 def calculate_dice(prediction, ground_truth, num_classes, ignore_index=-999):
-
+    """
+    Calculate Dice coefficient for each class
+    """
     with torch.no_grad():
         _, predicted = torch.max(prediction, 1)  
         dice_scores = []
@@ -48,8 +52,7 @@ def calculate_dice(prediction, ground_truth, num_classes, ignore_index=-999):
 
 def calculate_recall(prediction, ground_truth, num_classes, ignore_index=-999):
     """
-     Calculate the recall rate for each category Recall
-     Return: list of recall per class
+     Calculate the recall rate for each class
     """
     with torch.no_grad():
         _, predicted = torch.max(prediction, 1) 
@@ -72,6 +75,9 @@ def calculate_recall(prediction, ground_truth, num_classes, ignore_index=-999):
         return recall_scores
 
 def per_class_accuracy(prediction, ground_truth, num_classes, ignore_index=None):
+    """
+     Calculate accuracy for each class
+    """
     with torch.no_grad():
         _, predicted = torch.max(prediction, 1)
 
@@ -96,6 +102,9 @@ def per_class_accuracy(prediction, ground_truth, num_classes, ignore_index=None)
     return precisions
 
 def calculate_iou(prediction, ground_truth, num_classes, ignore_index=None):
+    """
+     Calculate IoU score for each class
+    """
     with torch.no_grad():
         _, predicted = torch.max(prediction, 1)
 
@@ -120,7 +129,9 @@ def calculate_iou(prediction, ground_truth, num_classes, ignore_index=None):
     return iou_list
             
 def calculate_hausdorff(prediction, ground_truth, num_classes, ignore_index=-999):
-
+    """
+     Calculate hausdorff distance for each class
+    """
     with torch.no_grad():
         _, predicted = torch.max(prediction, 1) 
         hd_scores = []
