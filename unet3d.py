@@ -1,14 +1,23 @@
+"""
+unet3d.py
+
+This document implements the construction of a 3D U-net network.
+Code implementation reference: https://github.com/amir-aghdam/3D-UNet/tree/main
+
+"""
+
+
 from torch import nn
 import torch
 from layer import Convolution3DCH
 
 
 
-# 3D-UNIT 神经网络encoder
+# 3D-UNIT encoder
 class ConvBlock3D(nn.Module):
   def __init__(self, in_channels, out_channels, cross_hair, bottleneck = False):
     super(ConvBlock3D, self).__init__()
-    Conv = Convolution3DCH if cross_hair else nn.Conv3d
+    Conv = Convolution3DCH if cross_hair else nn.Conv3d # If cross_hair is true, use the custom convolution layer
 
     
     self.conv1 = Conv(in_channels= in_channels, out_channels=out_channels//2, kernel_size=(5,5,5), padding=2,stride=1)
@@ -34,7 +43,7 @@ class ConvBlock3D(nn.Module):
 
 
 
-  # 3D-UNIT 神经网络decoder
+  # 3D-UNIT decoder
 class Decoderblock(nn.Module):
   def __init__(self, in_channels,  cross_hair, num_classes=None, res_channels=0, last_layer=False):
     super(Decoderblock, self).__init__()
@@ -60,7 +69,7 @@ class Decoderblock(nn.Module):
     return out
   
 
-  # 构建3D网络
+  # Build thhe 3D network.
 class UNet3D(nn.Module):
   def __init__(self, in_channels, num_classes, level_channels=[64, 128, 256], bottleneck_channel=512, cross_hair=False) -> None:
     super(UNet3D, self).__init__()
@@ -75,13 +84,11 @@ class UNet3D(nn.Module):
 
 
   def forward(self, input):
-    #Analysis path forward feed
     out, residual_level1 = self.a_block1(input)
     out, residual_level2 = self.a_block2(out)
     out, residual_level3 = self.a_block3(out)
     out, _ = self.bottleNeck(out)
 
-    #Synthesis path forward feed
     out = self.s_block3(out, residual_level3)
     out = self.s_block2(out, residual_level2)
     out = self.s_block1(out, residual_level1)
