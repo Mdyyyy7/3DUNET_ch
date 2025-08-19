@@ -9,20 +9,18 @@ from monai.transforms import (
 
 
 
-
-
-
-
-# 训练数据转化过程
+# Preprocessing of training data
 train_transform = Compose(
 [
   EnsureType(data_type='tensor'),
 
+  # Normalize CT values
   Lambdad(
     keys="image",
     func=lambda x: (x.clamp(min=-1000, max=400) + 1000) / 1400
   ),
   DivisiblePadd(k=16, keys=["image", "label"]),
+  # Change the image size
   Resized(keys=["image", "label"], spatial_size=(160,160,160), mode=("trilinear", "nearest")),
   ToTensord(keys=['image', 'label'])
 ]
@@ -30,7 +28,7 @@ train_transform = Compose(
 
 
 
-# Cuda版本
+# Cuda version of preprocessing for training data
 train_transform_cuda = Compose(
 [
   EnsureType(data_type='tensor'),
@@ -46,7 +44,7 @@ train_transform_cuda = Compose(
 )
 
 
-# 测试数据和验证数据
+# Preprocessing of test and validation data
 val_transform = Compose(
 [
   EnsureType(data_type='tensor'),
@@ -62,7 +60,7 @@ val_transform = Compose(
 )
 
 
-# cuda版本
+# Cuda version of preprocessing for testing and validation data
 val_transform_cuda = Compose(
 [
   EnsureType(data_type='tensor'),
