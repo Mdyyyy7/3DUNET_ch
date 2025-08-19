@@ -7,7 +7,6 @@ from config import (
 from torch.nn import CrossEntropyLoss
 from dataset import get_Dataloaders_new
 from torch.optim import Adam
-# from torch.utils.tensorboard import SummaryWriter
 from unet3d import UNet3D
 from transforms import (train_transform, train_transform_cuda,
                         val_transform, val_transform_cuda)
@@ -20,13 +19,21 @@ from torch.nn import BCEWithLogitsLoss
 
 
 def save_probability_maps_from_output(output, num_classes=3, save_dir="prob_maps", prefix="epoch"):
-    os.makedirs(save_dir, exist_ok=True)
+    """
+    Save softmax probability maps from model output as PNG images.
 
-    # Softmax 转成概率
+    Args:
+        output (torch.Tensor): Model logits, shape [B, C, D, H, W].
+        num_classes (int): Number of classes.
+        save_dir (str): Directory to save images.
+        prefix (str): Filename prefix.
+
+    """
+    os.makedirs(save_dir, exist_ok=True)
     prob_map = torch.softmax(output, dim=1)  
 
     for class_index in range(num_classes):
-        for slice_index in range(prob_map.shape[2]):  # 遍历深度 D
+        for slice_index in range(prob_map.shape[2]):  
             prob_slice = prob_map[0, class_index, slice_index, :, :].detach().cpu().numpy()
 
             plt.imshow(prob_slice, cmap='jet')
@@ -42,7 +49,6 @@ def save_probability_maps_from_output(output, num_classes=3, save_dir="prob_maps
 if BACKGROUND_AS_CLASS:
   NUM_CLASSES += 1
 
-# writer = SummaryWriter("runs")
 model = UNet3D(in_channels=IN_CHANNELS , num_classes= NUM_CLASSES, cross_hair=True)
 print('Train model with cross_hair')
 train_transforms = train_transform
@@ -87,7 +93,6 @@ for epoch in range(TRAINING_EPOCH):
         
 
         ground_truth = ground_truth.squeeze(1).long()
-        # ground_truth[ground_truth < 0] = -999
 
         optimizer.zero_grad()
         target = model(image)
@@ -132,9 +137,6 @@ for epoch in range(TRAINING_EPOCH):
         for i, r in enumerate(accuracy_scores):
             accuracy_sums[i] += r
 
-
-    # writer.add_scalar("Loss/Train", train_loss / len(train_dataloader), epoch)
-    # writer.add_scalar("Loss/Validation", valid_loss / len(val_dataloader), epoch)
 
     epoch_end = time.time()
     avg_train=train_loss / len(train_dataloader)
