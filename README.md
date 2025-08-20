@@ -57,7 +57,7 @@ The following code is used to train a 3D U-Net network that applies the two-dime
 ```
 python train_ch.py
 ```
-## Run the test
+## Run test
 After training, you can obtain the checkpoint file for saving the model. Run the following code to obtain the results on the test set and the evaluation score. To original 3D U-Net:
 ```
 python test_noch.py
