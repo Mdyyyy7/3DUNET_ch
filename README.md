@@ -78,7 +78,6 @@ The necessary parameters are the input and output file names, both of which are 
 python postprocessing/reconnect_vessels.py -h
 ```
 The post-processing test is saved in postprocessing\test_connection.py. In this file, set the file paths before and after reconnection, as well as the ground truth file path. Run the test using the following code:
-information can be viewed by entering:
 ```
 python postprocessing/test_connection.py
 ```
