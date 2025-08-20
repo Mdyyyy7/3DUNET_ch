@@ -20,11 +20,9 @@ import scipy.ndimage as ndi
 from skimage.measure import label, regionprops
 import torch
 
-import sys
-sys.path.append(r"HiPas_postprocessing")
-from connectivity import select_region
-from distance_transform import perform_distance_trans
-from get_skeleton import soft_dilate, soft_erode, soft_skel
+from HiPas_postprocessing.connectivity import select_region
+from HiPas_postprocessing.distance_transform import perform_distance_trans
+from HiPas_postprocessing.get_skeleton import soft_dilate, soft_erode, soft_skel
 
 
 

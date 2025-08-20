@@ -44,7 +44,7 @@ def calculate_dice(prediction, ground_truth, num_classes, ignore_index=-999):
                 dice = (2.0 * intersection) / (pred_sum + gt_sum)
 
             dice_scores.append(dice)
-            #print(f"[Class {cls}] pred_sum: {pred_cls.sum().item()}, gt_sum: {gt_cls.sum().item()}, intersection: {intersection}")
+            
 
         return dice_scores
     
